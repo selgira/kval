@@ -1,0 +1,78 @@
+#login_ui.py
+from PyQt6 import QtCore, QtGui, QtWidgets
+
+
+class Ui_Login(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(384, 286)
+        self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.label = QtWidgets.QLabel(parent=self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(30)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label.setObjectName("label")
+        self.verticalLayout.addWidget(self.label)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.label_login = QtWidgets.QLabel(parent=self.centralwidget)
+        self.label_login.setObjectName("label_login")
+        self.horizontalLayout_2.addWidget(self.label_login)
+        self.lineEdit_login = QtWidgets.QLineEdit(parent=self.centralwidget)
+        self.lineEdit_login.setObjectName("lineEdit_login")
+        self.horizontalLayout_2.addWidget(self.lineEdit_login)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.label_password = QtWidgets.QLabel(parent=self.centralwidget)
+        self.label_password.setObjectName("label_password")
+        self.horizontalLayout_3.addWidget(self.label_password)
+        self.lineEdit_password = QtWidgets.QLineEdit(parent=self.centralwidget)
+        self.lineEdit_password.setObjectName("lineEdit_password")
+        self.horizontalLayout_3.addWidget(self.lineEdit_password)
+        self.verticalLayout.addLayout(self.horizontalLayout_3)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.pushButton_login = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.pushButton_login.setObjectName("pushButton_login")
+        self.horizontalLayout.addWidget(self.pushButton_login)
+        self.pushButton_guest = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.pushButton_guest.setObjectName("pushButton_guest")
+        self.horizontalLayout.addWidget(self.pushButton_guest)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 384, 36))
+        self.menubar.setObjectName("menubar")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.label.setText(_translate("MainWindow", "Авторизация"))
+        self.label_login.setText(_translate("MainWindow", "Логин:"))
+        self.label_password.setText(_translate("MainWindow", "Пароль:"))
+        self.pushButton_login.setText(_translate("MainWindow", "Войти"))
+        self.pushButton_guest.setText(_translate("MainWindow", "Как гость"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_Login()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec())

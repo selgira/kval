@@ -1,0 +1,146 @@
+CREATE DATABASE kvalik_shop;
+USE kvalik_shop;
+
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(60) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('guest','client','manager','admin') NOT NULL DEFAULT 'client',
+    full_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    description VARCHAR(200),
+    price DECIMAL(10,2) NOT NULL,
+    discount INT DEFAULT 0,
+    image_path VARCHAR(500),
+    sku VARCHAR(60) NOT NULL UNIQUE,
+    
+    category_id INT,
+    FOREIGN KEY (category_id) REFERENCES categories(category_id)
+);
+
+CREATE TABLE product_variants (
+    variant_id INT AUTO_INCREMENT PRIMARY KEY,
+    size VARCHAR(10) NOT NULL,
+    color VARCHAR(60) NOT NULL,
+    stock_qty int DEFAULT 0,
+    price_modifier DECIMAL(8,2) NOT NULL DEFAULT 0.00,
+    
+	product_id INT NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+CREATE TABLE delivery_methods (
+    delivery_method_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    cost DECIMAL(8,2) NOT NULL DEFAULT 0.00,
+    delivery_days TINYINT NOT NULL
+);
+
+CREATE TABLE orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    address VARCHAR(400) NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    status ENUM('новый','обработка','отправлено','доставлено','отменено','возврат') NOT NULL DEFAULT 'новый',
+    payment_method ENUM('карта','наличные','онлайн') NOT NULL DEFAULT 'карта',
+    order_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    delivery_date DATE,
+    
+	user_id INT,
+    delivery_method_id INT,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (delivery_method_id) REFERENCES delivery_methods(delivery_method_id)
+);
+
+CREATE TABLE order_items (
+    order_item_id INT AUTO_INCREMENT PRIMARY KEY,
+    quantity int NOT NULL DEFAULT 1,
+    price_at_order DECIMAL(10,2) NOT NULL,
+    
+    order_id INT NOT NULL,
+    variant_id INT NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id),
+    FOREIGN KEY (variant_id) REFERENCES product_variants(variant_id)
+);
+
+USE kvalik_shop;
+
+-- Отключаем safe mode
+SET SQL_SAFE_UPDATES = 0;
+
+-- Очистка (в правильном порядке: сначала дочерние)
+DELETE FROM order_items WHERE order_item_id > 0;
+DELETE FROM orders WHERE order_id > 0;
+DELETE FROM product_variants WHERE variant_id > 0;
+DELETE FROM products WHERE product_id > 0;
+DELETE FROM categories WHERE category_id > 0;
+DELETE FROM delivery_methods WHERE delivery_method_id > 0;
+DELETE FROM users WHERE user_id > 0;
+
+-- Сброс автоинкремента
+ALTER TABLE order_items AUTO_INCREMENT = 1;
+ALTER TABLE orders AUTO_INCREMENT = 1;
+ALTER TABLE product_variants AUTO_INCREMENT = 1;
+ALTER TABLE products AUTO_INCREMENT = 1;
+ALTER TABLE categories AUTO_INCREMENT = 1;
+ALTER TABLE delivery_methods AUTO_INCREMENT = 1;
+ALTER TABLE users AUTO_INCREMENT = 1;
+
+SET SQL_SAFE_UPDATES = 1;
+
+-- 1. Пользователи (родительская)
+INSERT INTO users (username, password_hash, role, full_name) VALUES
+('admin', 'hash_admin_123', 'admin', 'Иванов Иван Иванович'),
+('manager1', 'hash_manager_456', 'manager', 'Петрова Анна Сергеевна'),
+('client1', 'hash_client_789', 'client', 'Сидоров Алексей Петрович');
+
+-- 2. Категории (родительская)
+INSERT INTO categories (name) VALUES
+('Футболки'),
+('Джинсы'),
+('Куртки');
+
+-- 3. Товары (зависит от categories)
+INSERT INTO products (name, description, price, discount, image_path, sku, category_id) VALUES
+('Футболка базовая', 'Хлопковая футболка прямого кроя', 1500.00, 10, 'images/tshirt_basic.jpg', 'TSH-BAS-001', 1),
+('Джинсы классические', 'Прямые джинсы из плотного денима', 4500.00, 15, 'images/jeans_classic.jpg', 'JNS-CLS-001', 2),
+('Куртка зимняя', 'Тёплая куртка с капюшоном', 12000.00, 0, 'images/jacket_winter.jpg', 'JCK-WIN-002', 3);
+
+-- 4. Варианты товаров (зависит от products)
+INSERT INTO product_variants (size, color, stock_qty, price_modifier, product_id) VALUES
+('S', 'Белый', 20, 0.00, 1),
+('M', 'Белый', 25, 0.00, 1),
+('L', 'Чёрный', 22, 100.00, 1),
+('30/32', 'Синий', 10, 0.00, 2),
+('32/32', 'Синий', 15, 0.00, 2),
+('32/32', 'Чёрный', 8, 200.00, 2),
+('M', 'Чёрный', 7, 0.00, 3),
+('L', 'Чёрный', 9, 0.00, 3),
+('XL', 'Тёмно-синий', 5, 500.00, 3);
+
+-- 5. Способы доставки (родительская)
+INSERT INTO delivery_methods (name, cost, delivery_days) VALUES
+('Самовывоз', 0.00, 0),
+('Курьером по городу', 350.00, 1),
+('Почта России', 250.00, 7);
+
+-- 6. Заказы (зависит от users и delivery_methods)
+INSERT INTO orders (address, total_amount, status, payment_method, order_date, user_id, delivery_method_id) VALUES
+('г. Москва, ул. Ленина, д. 15, кв. 42', 5150.00, 'доставлено', 'карта', '2024-01-15 14:30:00', 3, 2),
+('г. Санкт-Петербург, пр. Невский, д. 45, кв. 78', 3450.00, 'обработка', 'карта', '2024-01-25 16:45:00', 3, 3),
+('г. Казань, ул. Баумана, д. 8, кв. 12', 12000.00, 'новый', 'онлайн', '2024-01-28 11:00:00', 3, 1);
+
+-- 7. Товары в заказах (зависит от orders и product_variants)
+INSERT INTO order_items (quantity, price_at_order, order_id, variant_id) VALUES
+(2, 1350.00, 1, 2),
+(1, 3825.00, 1, 5),
+(1, 1600.00, 2, 3),
+(1, 12000.00, 3, 8);
